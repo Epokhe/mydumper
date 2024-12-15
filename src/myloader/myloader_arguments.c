@@ -155,8 +155,8 @@ static GOptionEntry execution_entries[] = {
     {"enable-binlog", 'e', 0, G_OPTION_ARG_NONE, &enable_binlog,
      "Enable binary logging of the restore data", NULL},
     {"innodb-optimize-keys", 0, G_OPTION_FLAG_OPTIONAL_ARG, G_OPTION_ARG_CALLBACK , &arguments_callback,
-     "Creates the table without the indexes unless SKIP is selected.\n"
-     "It will add the indexes right after complete the table restoration by default or after import all the tables.\n"
+     "Creates the table without the indexes unless SKIP is selected. "
+     "It will add the indexes right after complete the table restoration by default or after import all the tables. "
      "Options: AFTER_IMPORT_PER_TABLE, AFTER_IMPORT_ALL_TABLES and SKIP. Default: AFTER_IMPORT_PER_TABLE", NULL},
     { "no-schema", 0, 0, G_OPTION_ARG_NONE, &no_schemas, "Do not import table schemas and triggers ", NULL},
     { "purge-mode", 0, 0, G_OPTION_ARG_CALLBACK , &arguments_callback,
