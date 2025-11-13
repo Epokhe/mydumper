@@ -31,6 +31,7 @@ extern gboolean no_dump_views;
 extern gboolean views_as_tables;
 extern gboolean dump_checksums;
 extern gboolean split_partitions;
+extern gboolean split_subpartitions;
 extern guint char_deep;
 extern const gchar *exec_per_thread_extension;
 extern gchar *exec_per_thread;
