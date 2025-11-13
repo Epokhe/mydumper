@@ -39,6 +39,7 @@
 
 
 gboolean split_partitions = FALSE;
+gboolean split_subpartitions = FALSE;
 gchar *partition_regex = FALSE;
 
 struct chunk_step_item *get_next_partition_chunk(struct db_table *dbt);
@@ -51,7 +52,7 @@ void process_partition_chunk(struct table_job *tj, struct chunk_step_item *csi){
       return;
     }
     g_mutex_lock(csi->mutex);
-    partition=g_strdup_printf(" PARTITION (%s) ",(char*)(cs->partition_step.list->data));
+    partition=g_strdup((char*)(cs->partition_step.list->data));
     cs->partition_step.list= cs->partition_step.list->next;
     g_mutex_unlock(csi->mutex);
     tj->partition = partition;
@@ -116,9 +117,9 @@ struct chunk_step_item *get_next_partition_chunk(struct db_table *dbt){
   return NULL;
 }
 
-GList * get_partitions_for_table(MYSQL *conn, struct db_table *dbt){
+GList * get_partitions_for_table(MYSQL *conn, struct db_table *dbt, gboolean include_subpartitions){
 
-  gchar *query = g_strdup_printf("select PARTITION_NAME from information_schema.PARTITIONS where PARTITION_NAME is not null and TABLE_SCHEMA='%s' and TABLE_NAME='%s'", dbt->database->name, dbt->table);
+  gchar *query = g_strdup_printf("select DISTINCT PARTITION_NAME, SUBPARTITION_NAME from information_schema.PARTITIONS where PARTITION_NAME is not null and TABLE_SCHEMA='%s' and TABLE_NAME='%s'", dbt->database->name, dbt->table);
   MYSQL_RES *res=m_store_result(conn,query, NULL,"Partitioning is not supported", NULL);
   g_free(query);
 
@@ -129,8 +130,12 @@ GList * get_partitions_for_table(MYSQL *conn, struct db_table *dbt){
   GList *partition_list = NULL;
   MYSQL_ROW row;
   while ((row = mysql_fetch_row(res))) {
-    if ( (!dbt->partition_regex && eval_partition_regex(row[0])) || (dbt->partition_regex && eval_pcre_regex(dbt->partition_regex, row[0]) ) )
-      partition_list = g_list_append(partition_list, strdup(row[0]));
+    if ( (!dbt->partition_regex && eval_partition_regex(row[0])) || (dbt->partition_regex && eval_pcre_regex(dbt->partition_regex, row[0]) ) ) {
+      if (include_subpartitions && row[1])
+        partition_list = g_list_append(partition_list, g_strdup_printf(" PARTITION (%s) SUBPARTITION (%s) ", row[0], row[1]));
+      else
+        partition_list = g_list_append(partition_list, g_strdup_printf(" PARTITION (%s) ", row[0]));
+    }
   }
   mysql_free_result(res);
 

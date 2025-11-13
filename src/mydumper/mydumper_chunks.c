@@ -272,7 +272,7 @@ void set_chunk_strategy_for_dbt(MYSQL *conn, struct db_table *dbt){
   if (rows > dbt->min_chunk_step_size){
     GList *partitions=NULL;
     if (split_partitions || dbt->partition_regex){
-      partitions = get_partitions_for_table(conn, dbt);
+      partitions = get_partitions_for_table(conn, dbt, split_partitions && split_subpartitions);
     }
     if (partitions){
       csi=new_real_partition_step_item(partitions,0,0);
@@ -474,4 +474,3 @@ void *chunk_builder_thread(struct configuration *conf)
   table_job_enqueue(&conf->transactional);
   return NULL;
 }
-

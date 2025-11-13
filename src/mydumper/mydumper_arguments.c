@@ -314,6 +314,8 @@ static GOptionEntry chunks_entries[] = {
       "This set the MIN and MAX limit when even if --rows is 0", NULL},
     {"split-partitions", 0, 0, G_OPTION_ARG_NONE, &split_partitions,
       "Dump partitions into separate files. This option overrides the --rows option for partitioned tables.", NULL},
+    {"split-subpartitions", 0, 0, G_OPTION_ARG_NONE, &split_subpartitions,
+      "When splitting partitions, also create jobs per subpartition (if present)", NULL},
     {NULL, 0, 0, G_OPTION_ARG_NONE, NULL, NULL, NULL}};
 
 static GOptionEntry checksum_entries[] = {
@@ -481,4 +483,3 @@ GOptionContext * load_contex_entries(){
 
 return context;
 }
-
