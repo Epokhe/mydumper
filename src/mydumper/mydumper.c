@@ -110,6 +110,7 @@ void print_help(){
 //    print_string("char-chunk",);
     print_string("rows",g_strdup_printf("%"G_GUINT64_FORMAT":%"G_GUINT64_FORMAT":%"G_GUINT64_FORMAT,min_chunk_step_size, starting_chunk_step_size, max_chunk_step_size));
     print_bool("split-partitions",split_partitions);
+    print_bool("split-subpartitions",split_subpartitions);
     print_bool("checksum-all",dump_checksums);
     print_bool("data-checksums",data_checksums);
     print_bool("schema-checksums",schema_checksums);
@@ -330,4 +331,3 @@ int main(int argc, char *argv[]) {
 //  g_strfreev(argv);
   exit(errors ? EXIT_FAILURE : EXIT_SUCCESS);
 }
-

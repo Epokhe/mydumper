@@ -39,6 +39,7 @@
 
 
 gboolean split_partitions = FALSE;
+gboolean split_subpartitions = FALSE;
 gchar *partition_regex = FALSE;
 
 struct chunk_step_item *get_next_partition_chunk(struct db_table *dbt);
@@ -116,9 +117,13 @@ struct chunk_step_item *get_next_partition_chunk(struct db_table *dbt){
   return NULL;
 }
 
-GList * get_partitions_for_table(MYSQL *conn, struct db_table *dbt){
-
-  gchar *query = g_strdup_printf("select PARTITION_NAME from information_schema.PARTITIONS where PARTITION_NAME is not null and TABLE_SCHEMA='%s' and TABLE_NAME='%s'", dbt->database->name, dbt->table);
+GList * get_partitions_for_table(MYSQL *conn, struct db_table *dbt, gboolean try_subpartitions){
+  // even with subpartition splitting enabled, fall back to parent partitions for tables without subpartitions
+  const gchar *target_expr = try_subpartitions ?
+      "COALESCE(SUBPARTITION_NAME, PARTITION_NAME)" : "PARTITION_NAME";
+  gchar *query = g_strdup_printf(
+      "select DISTINCT %s from information_schema.PARTITIONS where %s is not null and TABLE_SCHEMA='%s' and TABLE_NAME='%s'",
+      target_expr, target_expr, dbt->database->name, dbt->table);
   MYSQL_RES *res=m_store_result(conn,query, NULL,"Partitioning is not supported", NULL);
   g_free(query);
 
