@@ -176,15 +176,16 @@ void myl_close(const char *filename, FILE *file, gboolean rm){
   trace("myl_close %s", filename);
   g_mutex_lock(fifo_table_mutex);
   struct fifo *f=g_hash_table_lookup(fifo_hash,file);
+  if (f != NULL){
+    g_hash_table_remove(fifo_hash, file);
+  }
   g_mutex_unlock(fifo_table_mutex);
   fclose(file);
 
   if (f != NULL){
     int status=0;
     waitpid(f->pid, &status, 0);
-    g_mutex_lock(fifo_table_mutex);
     g_mutex_unlock(f->mutex);
-    g_mutex_unlock(fifo_table_mutex);
 
     // Issue #2075: FIFO is already unlinked in myl_open() after both ends connect.
     // No need to remove here - the FIFO name no longer exists on filesystem.
