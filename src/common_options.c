@@ -22,7 +22,6 @@
 #include "common.h"
 #include "config.h"
 #include "common_options.h"
-char *db = NULL;
 char *defaults_file = NULL;
 char *defaults_extra_file = NULL;
 
@@ -138,8 +137,13 @@ gboolean common_arguments_callback(const gchar *option_name,const gchar *value, 
   } else if (!strcmp(option_name, "--ignore-errors")){
     guint n=0;
     gchar **tmp_ignore_errors_list = g_strsplit(value, ",", 0);
+    if (ignore_errors_set == NULL) {
+      ignore_errors_set = g_hash_table_new(g_direct_hash, g_direct_equal);
+    }
     while(tmp_ignore_errors_list[n]!=NULL){
-      ignore_errors_list=g_list_append(ignore_errors_list,GINT_TO_POINTER(atoi(tmp_ignore_errors_list[n])));
+      gint error_code = atoi(tmp_ignore_errors_list[n]);
+      ignore_errors_list=g_list_append(ignore_errors_list,GINT_TO_POINTER(error_code));
+      g_hash_table_add(ignore_errors_set, GINT_TO_POINTER(error_code));
       n++;
     }
     return TRUE;

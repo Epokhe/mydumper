@@ -50,6 +50,7 @@ gboolean no_delete = FALSE;
 
 gboolean skip_constraints = FALSE;
 gboolean skip_indexes = FALSE;
+gboolean skip_metadata_sorting = FALSE;
 
 //gboolean no_stream = FALSE;
 // For daemon mode
@@ -83,7 +84,7 @@ void print_help(){
     print_string("tls-version",tls_version);
 #endif
     print_list("regex",regex_list);
-    print_string("database",db);
+    print_string("database",source_db);
     print_string("ignore-engines",ignore_engines_str);
     print_string("where",where_option);
     print_int("updated-since",updated_since);
@@ -110,6 +111,7 @@ void print_help(){
 //    print_string("char-chunk",);
     print_string("rows",g_strdup_printf("%"G_GUINT64_FORMAT":%"G_GUINT64_FORMAT":%"G_GUINT64_FORMAT,min_chunk_step_size, starting_chunk_step_size, max_chunk_step_size));
     print_bool("split-partitions",split_partitions);
+    print_bool("split-subpartitions",split_subpartitions);
     print_bool("checksum-all",dump_checksums);
     print_bool("data-checksums",data_checksums);
     print_bool("schema-checksums",schema_checksums);
@@ -137,6 +139,7 @@ void print_help(){
     print_bool("complete-insert",complete_insert);
     print_bool("hex-blob",hex_blob);
     print_bool("skip-definer",skip_definer);
+    print_string("replace-definer",replace_definer);
     print_int("statement-size",statement_size);
     print_bool("tz-utc",skip_tz);
     print_bool("skip-tz-utc",skip_tz);
@@ -210,7 +213,7 @@ int main(int argc, char *argv[]) {
   if (tmpargc > 1 ){
     int pos=0;
     stream=TRUE;
-    db=strdup(tmpargv[1]);
+    source_db=strdup(tmpargv[1]);
     if (tmpargc > 2 ){
       GString *s = g_string_new(tmpargv[2]);
       for (pos=3; pos<tmpargc;pos++){
@@ -313,8 +316,10 @@ int main(int argc, char *argv[]) {
     dump_directory = output_directory;
     struct configuration conf;
     start_pmm_thread((void *)&conf);
-    start_dump(&conf);
+    start_dump(&conf, context);
   }
+
+  free_set_names();
 
   if (logoutfile) {
     fclose(logoutfile);
@@ -330,4 +335,3 @@ int main(int argc, char *argv[]) {
 //  g_strfreev(argv);
   exit(errors ? EXIT_FAILURE : EXIT_SUCCESS);
 }
-

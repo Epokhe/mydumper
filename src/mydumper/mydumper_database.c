@@ -24,6 +24,7 @@
 
 GHashTable *database_hash = NULL;
 static GMutex * database_hash_mutex = NULL;
+gchar *source_db;
 
 void free_database(struct database * _database){
   if (_database->source_database_escaped!=NULL){
@@ -73,19 +74,16 @@ struct database * get_database(MYSQL *conn, char *database_name, gboolean create
     database=new_database(conn,database_name);
     if (create_job)
       create_job_to_dump_schema(database);
-    g_mutex_unlock(database_hash_mutex);
-    return database;
   }
   g_mutex_unlock(database_hash_mutex);
   return database;
 }
 
 // see print_dbt_on_metadata_gstring() for table write to metadata
-void write_database_on_disk(FILE *mdfile){
+static
+void write_list_of_database_on_disk(FILE *mdfile, GList *keys){
   const char q= identifier_quote_character;
   struct database *_database;
-  GList *keys= g_hash_table_get_keys(database_hash);
-  keys= g_list_sort(keys, key_strcmp);
   for (GList *it= keys; it; it= g_list_next(it)) {
     _database= (struct database *) g_hash_table_lookup(database_hash, it->data);
     g_assert(_database);
@@ -100,6 +98,21 @@ void write_database_on_disk(FILE *mdfile){
     if (_database->triggers_checksum != NULL)
       fprintf(mdfile, "%s = %s\n", "triggers_checksum", _database->triggers_checksum);
   }
+}
+
+// see print_dbt_on_metadata_gstring() for table write to metadata
+void write_database_on_disk(FILE *mdfile){
+  GList *keys= g_hash_table_get_keys(database_hash);
+  keys= g_list_sort(keys, key_strcmp);
+  write_list_of_database_on_disk(mdfile, keys);
+  g_list_free(keys);
+}
+
+// OPTIMIZATION: Unsorted version - skips O(n*log(n)) sort for large database counts
+void write_database_on_disk_unsorted(FILE *mdfile){
+  GList *keys= g_hash_table_get_keys(database_hash);
+  // Skip sorting - saves time on 1000+ databases
+  write_list_of_database_on_disk(mdfile, keys);
   g_list_free(keys);
 }
 

@@ -33,6 +33,8 @@ struct thread_data_buffers {
   GString *row;
   GString *escaped;
   GString *column;
+  GString *column_mask;
+  GString *target_column;
 };
 
 struct thread_data {
@@ -43,6 +45,9 @@ struct thread_data {
   gchar *binlog_snapshot_gtid_executed;
   GMutex *pause_resume_mutex;
   struct thread_data_buffers thread_data_buffers;
+  // Thread-local row counter for batched updates (reduces atomic ops 1000x)
+  guint64 local_row_count;
+  struct db_table *local_row_count_dbt;
 };
 
 #endif

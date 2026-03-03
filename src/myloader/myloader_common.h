@@ -19,13 +19,12 @@
 
 #include "myloader.h"
 #include <stdio.h> 
-enum file_type get_file_type (const char * filename);
+//enum file_type get_file_type (const char * filename);
 gboolean eval_table( char *db_name, char * table_name, GMutex * mutex);
 void get_database_table_from_file(const gchar *filename,const char *sufix,gchar **database,gchar **table);
 int process_create_table_statement (gchar * statement, GString *create_table_statement, GString *alter_table_statement, GString *alter_table_constraint_statement, struct db_table *dbt, gboolean split_indexes);
 void finish_alter_table(GString * alter_table_statement);
 void initialize_common();
-gint compare_dbt(gconstpointer a, gconstpointer b, gpointer table_hash);
 void refresh_table_list(struct configuration *conf);
 void refresh_table_list_without_table_hash_lock(struct configuration *conf, gboolean force);
 void checksum_databases(struct thread_data *td);
@@ -45,4 +44,5 @@ void initialize_thread_data(struct thread_data*td, struct configuration *conf, e
 gboolean is_in_ignore_set_list(gchar *haystack);
 void remove_ignore_set_session_from_hash();
 void execute_replication_commands(MYSQL *conn, gchar *statement);
+gboolean should_ignore_set_statement(GString *data);
 #endif
