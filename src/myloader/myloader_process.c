@@ -71,7 +71,6 @@ void initialize_process(struct configuration *c){
   max_decompressors = num_threads;
   if (max_decompressors > 32) max_decompressors = 32;
   if (max_decompressors < 4) max_decompressors = 4;
-  max_decompressors=max_decompressors;
 }
 
 // Release a decompressor slot
@@ -843,4 +842,3 @@ gboolean process_data_filename(char * filename){
 	}
   return TRUE;
 }
-
