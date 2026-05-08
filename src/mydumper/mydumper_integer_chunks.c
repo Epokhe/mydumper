@@ -620,12 +620,15 @@ guint process_integer_chunk_step(struct table_job *tj, struct chunk_step_item *c
     cs->integer_step.check_min=FALSE;
   }
   if (!c_min && !c_max){
-    trace("Thread %d: I-Chunk 1: both min and max doesn't exists", td->thread_id);
+    trace("Thread %d: I-Chunk 1: both min and max doesn't exists. No need to continue with this job", td->thread_id);
+    if (cs->integer_step.is_unsigned){
+      cs->integer_step.type.unsign.min=cs->integer_step.type.unsign.max+1;
+    }else{
+      cs->integer_step.type.sign.min=cs->integer_step.type.sign.max+1;
+    }
     if (csi->position==0)
       close_files(tj);
-    g_mutex_unlock(csi->mutex);
-    goto update_min;
-//    goto end_process; 
+    goto end_process;
   }
 
 
@@ -850,7 +853,7 @@ update_min:
 
 //  g_message("Thread %d: I-Chunk 5: integer_step.type.sign.cursor: %"G_GINT64_FORMAT"  | integer_step.type.sign.min %"G_GINT64_FORMAT"  | cs->integer_step.type.sign.max : %"G_GINT64_FORMAT" | cs->integer_step.step %ld", td->thread_id, cs->integer_step.type.sign.cursor, cs->integer_step.type.sign.min, cs->integer_step.type.sign.max, cs->integer_step.step);
 
-//end_process:
+end_process:
 
   if (csi->position==0)
     csi->multicolumn=tj->dbt->multicolumn;
