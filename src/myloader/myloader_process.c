@@ -52,6 +52,10 @@ static GMutex *decompress_mutex = NULL;
 static guint active_decompressors = 0;
 static guint max_decompressors = 0;
 
+static gboolean should_skip_optimize_keys_for_table(struct db_table *dbt){
+  return dbt && dbt->optimize_keys && !g_ascii_strcasecmp(dbt->optimize_keys, SKIP);
+}
+
 void initialize_process(struct configuration *c){
   partial_metadata_queue=g_async_queue_new();
   replication_statements=g_new(struct replication_statements,1);
@@ -298,8 +302,13 @@ regex_error:
             }
           }else{
             // Processing CREATE TABLE statement
+            gboolean skip_optimize_keys_for_table = should_skip_optimize_keys_for_table(dbt);
+            gboolean table_would_optimize_keys = dbt->rows == 0 || dbt->rows >= 10;
+            gboolean split_indexes = skip_constraints || skip_indexes || (table_would_optimize_keys && !skip_optimize_keys_for_table);
+            if (table_would_optimize_keys && skip_optimize_keys_for_table)
+              g_message("Fast index creation disabled for table: %s.%s",dbt->database->target_database,dbt->source_table_name);
             int flag = // process_create_table_statement(data->str, create_table_statement, alter_table_statement, alter_table_constraint_statement, dbt, (dbt->rows == 0 || dbt->rows >= 1000000 || skip_constraints || skip_indexes));
-                      global_process_create_table_statement(data->str, create_table_statement, alter_table_statement, alter_table_constraint_statement, dbt->source_table_name?dbt->source_table_name:dbt->create_table_name, (dbt->rows == 0 || dbt->rows >= 10 || skip_constraints || skip_indexes));
+                      global_process_create_table_statement(data->str, create_table_statement, alter_table_statement, alter_table_constraint_statement, dbt->source_table_name?dbt->source_table_name:dbt->create_table_name, split_indexes);
             if (flag & IS_TRX_TABLE){
               if (flag & IS_ALTER_TABLE_PRESENT){
 //                finish_alter_table(alter_table_statement);

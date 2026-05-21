@@ -248,6 +248,10 @@ void load_per_table_info_from_key_file(GKeyFile *kf, struct configuration_per_ta
             value = g_key_file_get_value(kf,groups[i],keys[j],&error);
             g_hash_table_insert(cpt->all_object_to_export, g_strdup(groups[i]), g_strdup(value));
           }
+          if (g_strcmp0(keys[j],"optimize_keys") == 0){
+            value = g_key_file_get_value(kf,groups[i],keys[j],&error);
+            g_hash_table_insert(cpt->all_optimize_keys_per_table, g_strdup(groups[i]), g_strdup(value));
+          }
           if (g_strcmp0(keys[j],"partition_regex") == 0){
             value = g_key_file_get_value(kf,groups[i],keys[j],&error);
             pcre2_code *r=NULL; 
@@ -1297,6 +1301,8 @@ void initialize_conf_per_table(struct configuration_per_table *cpt){
   cpt->all_columns_on_insert_per_table=g_hash_table_new ( g_str_hash, g_str_equal );
 
   cpt->all_object_to_export=g_hash_table_new ( g_str_hash, g_str_equal );
+
+  cpt->all_optimize_keys_per_table=g_hash_table_new ( g_str_hash, g_str_equal );
 
   cpt->all_partition_regex_per_table=g_hash_table_new ( g_str_hash, g_str_equal );
 
