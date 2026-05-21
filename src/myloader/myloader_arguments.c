@@ -309,4 +309,3 @@ GOptionContext * load_contex_entries(){
 
   return context;
 }
-

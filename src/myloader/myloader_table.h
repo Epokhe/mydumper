@@ -28,6 +28,7 @@ struct db_table {
   gchar *table_filename;
   gchar *create_table_name;
   struct object_to_export object_to_export;
+  gchar *optimize_keys;
   guint64 rows;
   guint64 rows_inserted;
   GList * restore_job_list;

@@ -91,6 +91,7 @@ gboolean append_new_db_table( struct db_table **p_dbt, struct database *_databas
       dbt->restore_job_list = NULL;
       dbt->restore_job_list_sorted = TRUE;  // Empty list is trivially sorted
       parse_object_to_export(&(dbt->object_to_export),g_hash_table_lookup(conf_per_table.all_object_to_export, lkey));
+      dbt->optimize_keys=g_hash_table_lookup(conf_per_table.all_optimize_keys_per_table, lkey);
 			dbt->current_threads=0;
       dbt->max_threads=max_threads_per_table>num_threads?num_threads:max_threads_per_table;
       dbt->max_connections_per_job=0;
@@ -176,4 +177,3 @@ void free_table_hash(GHashTable *table_hash){
   } 
   g_mutex_unlock(__conf->table_hash_mutex);
 }
-
